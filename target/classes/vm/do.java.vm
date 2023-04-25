@@ -1,0 +1,35 @@
+package ${basePackage}${doPath};
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
+#foreach ($import in $importList)
+import ${import};
+#end
+
+/**
+ * $!{tableComment}
+ *
+ * @author ${author}
+ * ${dateTime}
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldNameConstants
+public class ${className} {
+
+
+
+#foreach ($column in $columns)
+    /** $!{column.columnComment} */
+    @ApiModelProperty("${column.columnComment}")
+    private $column.javaType $column.javaField;
+
+#end
+
+}

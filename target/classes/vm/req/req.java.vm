@@ -1,0 +1,44 @@
+package ${basePackage}${reqPath};
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+#foreach ($import in $importList)
+import ${import};
+#end
+
+/**
+ * $!{tableComment}
+ *
+ * @author ${author}
+ * ${dateTime}
+ */
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Query${className}Request {
+
+#foreach ($column in $columns)
+    #if(${column.isTime()})
+    /** $!{column.columnComment} 开始*/
+    @ApiModelProperty("${column.columnComment}开始")
+    private $column.javaType ${column.javaField}Start;
+
+    /** $!{column.columnComment} 结束*/
+    @ApiModelProperty("${column.columnComment}结束")
+    private $column.javaType ${column.javaField}End;
+
+    #elseif(!${column.isJson()})
+    /** $!{column.columnComment}*/
+    @ApiModelProperty("${column.columnComment}")
+    private $column.javaType ${column.javaField};
+
+    #end
+#end
+
+}

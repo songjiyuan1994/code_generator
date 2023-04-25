@@ -1,0 +1,98 @@
+package ${basePackage}${poPath};
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.*;
+#if(${hasCreatedBy})
+import org.springframework.data.annotation.CreatedBy;
+#end
+#if(${hasLastModifiedBy})
+import org.springframework.data.annotation.LastModifiedBy;
+#end
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.*;
+#foreach ($import in $importList)
+import ${import};
+#end
+
+/**
+ * $!{tableComment}
+ *
+ * @author ${author}
+ * ${dateTime}
+ */
+@Entity
+@Table(name = "${tableName}")
+#if(${dynamicInsertColumn})
+@DynamicInsert
+#end
+#if(${dynamicUpdateColumn})
+@DynamicUpdate
+#end
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+#if(${logicDelColumn}&&${hasLogicDelColumn})
+@Where(clause = "${logicDelColumn} = 0")
+@SQLDelete(sql = "UPDATE `${tableName}` SET `${logicDelColumn}` = 1 WHERE `${pkColumn}` = ?")
+#end
+public class ${className}PO {
+
+
+
+    #foreach ($column in $columns)
+    /** $!{column.columnComment} */
+    #if(${column.isPkColumn()})
+    @Id
+    #end
+    #if(${column.isAutoInc()})
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    #end
+    #if(${column.isCreatedBy()})
+    @CreatedBy
+    #end
+    #if(${column.isLastModifiedBy()})
+    @LastModifiedBy
+    #end
+    #if(${column.isJson()})
+    @Type(type = "json")
+    @Column(name = "${column.columnName}", columnDefinition = "json")
+    #else
+    @Column(name = "${column.columnName}")
+    #end
+    private $column.javaType $column.javaField;
+
+    #end
+
+#if(${dynamicInsertColumn}||${dynamicUpdateColumn})
+    @PrePersist
+    public void onCreate() {
+        #if(${dynamicInsertColumn})
+        if (this.get${dynamicInsertColumn.getCapJavaField()}() == null) {
+            ${dynamicInsertColumn.javaField} = LocalDateTime.now();
+        }
+        #end
+        #if(${dynamicUpdateColumn})
+        if (this.get${dynamicUpdateColumn.getCapJavaField()}() == null) {
+            ${dynamicUpdateColumn.javaField} = LocalDateTime.now();
+        }
+        #end
+    }
+#end
+#if(${dynamicUpdateColumn})
+    @PreUpdate
+    public void onUpdate() {
+        #if(${dynamicUpdateColumn})
+        if (this.get${dynamicUpdateColumn.getCapJavaField()}() == null) {
+            ${dynamicUpdateColumn.javaField} = LocalDateTime.now();
+        }
+        #end
+    }
+#end
+}
